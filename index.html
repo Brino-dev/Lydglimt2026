@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="nb">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#07090e">
+  <meta name="color-scheme" content="dark">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <title>Lydglimt</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <style>
+    /* 1. CSS variables */
+    :root {
+      --bg: #07090e;
+      --surface: rgba(255, 255, 255, 0.045);
+      --surface-natural: rgba(109, 138, 130, 0.10);
+      --text: #dce3ea;
+      --text-muted: #8b95a1;
+      --text-faint: #6a737d;
+      --accent: #8b9aab;
+      --accent-fill: #9aabc0;
+      --accent-line: rgba(139, 154, 171, 0.18);
+      --natural: #6d8a82;
+      --natural-text: #9aafa8;
+      --natural-line: rgba(109, 138, 130, 0.22);
+      --ring-track: #1b222c;
+      --tap: 44px;
+      --radius: 16px;
+      --pad: 24px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+      --title-size: 1.625rem;
+      --title-weight: 500;
+      --title-tracking: 0.01em;
+    }
+
+    /* 2. layout/styles */
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.4;
+    }
+
+    body {
+      min-height: 100dvh;
+      min-height: 100svh;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    button {
+      font-family: inherit;
+      color: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+      background: none;
+      border: none;
+      padding: 0;
+      margin: 0;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 430px;
+      height: 100dvh;
+      height: 100svh;
+      margin: 0 auto;
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      inset: 0;
+      padding: calc(10px + env(safe-area-inset-top)) var(--pad) calc(20px + env(safe-area-inset-bottom));
+      overflow: hidden;
+    }
+
+    .screen.active {
+      display: flex;
+    }
+
+    .screen[hidden] {
+      display: none !important;
+    }
+
+    .room-dot {
+      display: block;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 1.35px solid var(--accent);
+      background-color: transparent;
+      flex-shrink: 0;
+    }
+
+    .room-dot.little {
+      background-image: linear-gradient(to top, var(--accent-fill) 50%, var(--bg) 50%);
+    }
+
+    .room-dot.clear {
+      background: var(--accent-fill);
+    }
+
+    .page-title {
+      font-family: var(--font-sans);
+      font-size: var(--title-size);
+      font-weight: var(--title-weight);
+      letter-spacing: var(--title-tracking);
+      line-height: 1.2;
+      color: var(--text);
+      margin: 0;
+      text-align: center;
+    }
+
+    .top-bar {
+      display: flex;
+      align-items: center;
+      min-height: var(--tap);
+      flex-shrink: 0;
+    }
+
+    .top-bar .page-title {
+      flex: 1;
+      pointer-events: none;
+    }
+
+    .text-btn,
+    .icon-btn {
+      min-width: var(--tap);
+      min-height: var(--tap);
+      display: inline-flex;
+      align-items: center;
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .icon-btn {
+      justify-content: center;
+      margin-left: -10px;
+    }
+
+    .icon-btn svg,
+    .text-btn svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .lede {
+      margin: 10px 0 0;
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 400;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    .footnote {
+      margin: 0;
+      color: var(--text-faint);
+      font-size: 0.8rem;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    /* Home */
+    .home-header {
+      padding-top: 7vh;
+      padding-bottom: 4vh;
+      flex-shrink: 0;
+    }
+
+    .home-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .choice-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .choice {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      text-align: left;
+      background: var(--surface);
+      border: 1px solid var(--accent-line);
+      border-radius: var(--radius);
+      padding: 16px 14px 16px 16px;
+      min-height: 72px;
+      color: var(--text);
+    }
+
+    .choice:active {
+      opacity: 0.78;
+    }
+
+    .choice-natural {
+      background: var(--surface-natural);
+      border-color: var(--natural-line);
+    }
+
+    .choice-icon {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .choice-natural .choice-icon,
+    .choice-natural .choice-chevron {
+      color: var(--natural);
+    }
+
+    .choice-icon svg,
+    .choice-chevron svg {
+      width: 22px;
+      height: 22px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .choice-text {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .choice-title {
+      font-size: 1.05rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .choice-meta {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      font-weight: 400;
+      line-height: 1.35;
+    }
+
+    .choice-natural .choice-meta {
+      color: var(--natural-text);
+    }
+
+    .choice-chevron {
+      color: var(--accent);
+      opacity: 0.7;
+      flex-shrink: 0;
+      display: flex;
+    }
+
+    .or-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 6px 0;
+    }
+
+    .or-line {
+      flex: 1;
+      height: 1px;
+      background: var(--accent-line);
+    }
+
+    .or-text {
+      color: var(--text-faint);
+      font-size: 0.82rem;
+    }
+
+    .home-footer {
+      flex-shrink: 0;
+      display: flex;
+      justify-content: center;
+      padding-top: 20px;
+    }
+
+    .history-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      min-width: var(--tap);
+      min-height: var(--tap);
+      padding: 8px 16px;
+      color: var(--text-faint);
+      font-size: 0.75rem;
+      letter-spacing: 0.02em;
+    }
+
+    .history-link svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .history-link:active {
+      opacity: 0.7;
+    }
+
+    /* Player */
+    .player-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      text-align: center;
+    }
+
+    .player-kicker {
+      margin: 14px 0 0;
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 400;
+    }
+
+    .player-duration {
+      margin: 2px 0 0;
+      color: var(--text-faint);
+      font-size: 0.9rem;
+    }
+
+    .player-control {
+      position: relative;
+      width: min(58vw, 220px);
+      height: min(58vw, 220px);
+      margin: 36px 0 8px;
+      border-radius: 50%;
+      color: var(--text);
+    }
+
+    .player-control:active {
+      opacity: 0.85;
+    }
+
+    .progress-svg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .progress-svg .track {
+      fill: none;
+      stroke: var(--ring-track);
+      stroke-width: 3.5;
+    }
+
+    .progress-svg .progress {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3.5;
+      stroke-linecap: butt;
+    }
+
+    .player-inner {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+    }
+
+    .play-icon {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 8px;
+      color: var(--text);
+    }
+
+    .play-icon svg {
+      width: 22px;
+      height: 22px;
+      display: block;
+    }
+
+    .time-elapsed {
+      font-size: 1.05rem;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+      letter-spacing: 0.02em;
+    }
+
+    .time-total {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .player-instruction {
+      margin-top: auto;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      text-align: center;
+      line-height: 1.45;
+    }
+
+    /* Mark room */
+    .mark-header {
+      padding-top: 8px;
+    }
+
+    .mark-header .page-title {
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    .mark-header,
+    .history-header {
+      width: 100%;
+    }
+
+    .mark-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      min-height: 0;
+    }
+
+    .mark-options {
+      display: flex;
+      width: 100%;
+      gap: 6px;
+      margin-top: 40px;
+    }
+
+    .mark-option {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      min-height: var(--tap);
+      padding: 12px 4px;
+      color: var(--text-muted);
+      font-size: 0.78rem;
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .mark-option:active {
+      opacity: 0.7;
+    }
+
+    .day-dots .room-dot {
+      width: 18px;
+      height: 18px;
+      border-width: 1.25px;
+    }
+
+    .mark-footer {
+      margin-top: auto;
+      padding-top: 24px;
+    }
+
+    /* History */
+    .history-header {
+      padding-top: 8px;
+      flex-shrink: 0;
+    }
+
+    .history-header .page-title {
+      margin-top: 8px;
+    }
+
+    .history-scroll {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 0 -8px;
+      padding: 0 8px 12px;
+    }
+
+    .week-nav {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      margin: 22px 0 8px;
+    }
+
+    .week-nav .icon-btn {
+      margin: 0;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .week-nav .icon-btn:disabled {
+      opacity: 0.28;
+      cursor: default;
+    }
+
+    .week-label {
+      flex: 1;
+      margin: 0;
+      text-align: center;
+      color: var(--text);
+      font-size: 0.92rem;
+      font-weight: 400;
+    }
+
+    .day-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .day-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      min-height: var(--tap);
+      padding: 8px 2px;
+      gap: 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(139, 154, 171, 0.08);
+    }
+
+    .day-row:active {
+      opacity: 0.8;
+    }
+
+    .day-name {
+      width: 64px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-dots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      min-height: 22px;
+    }
+
+    .day-details {
+      display: none;
+      padding: 0 2px 12px 80px;
+    }
+
+    .day-details.open {
+      display: block;
+    }
+
+    .day-entry {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 3px 0;
+      color: var(--text-faint);
+      font-size: 0.8rem;
+    }
+
+    .day-entry time {
+      font-variant-numeric: tabular-nums;
+    }
+
+    .day-entry .session-kind {
+      opacity: 0.85;
+    }
+
+    .history-footer {
+      flex-shrink: 0;
+      padding-top: 16px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- 3. HTML for skjermene -->
+
+    <section id="screen-home" class="screen active" aria-label="Hjem">
+      <header class="home-header">
+        <h1 class="page-title">Lydglimt</h1>
+      </header>
+
+      <div class="home-main">
+        <div class="choice-stack">
+          <button class="choice" type="button" data-session="micro">
+            <span class="choice-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 13v-1a8 8 0 0 1 16 0v1"></path>
+                <rect x="2.5" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+                <rect x="17" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+              </svg>
+            </span>
+            <span class="choice-text">
+              <span class="choice-title">Mikro-økt</span>
+              <span class="choice-meta">30 sek</span>
+            </span>
+            <span class="choice-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+            </span>
+          </button>
+
+          <button class="choice" type="button" data-session="full">
+            <span class="choice-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M4 13v-1a8 8 0 0 1 16 0v1"></path>
+                <rect x="2.5" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+                <rect x="17" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+              </svg>
+            </span>
+            <span class="choice-text">
+              <span class="choice-title">Full økt</span>
+              <span class="choice-meta">5 min</span>
+            </span>
+            <span class="choice-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+            </span>
+          </button>
+
+          <div class="or-row" role="separator">
+            <span class="or-line"></span>
+            <span class="or-text">eller</span>
+            <span class="or-line"></span>
+          </div>
+
+          <button class="choice choice-natural" type="button" data-session="natural">
+            <span class="choice-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24">
+                <path d="M6 19c7-1.2 13-7.2 13-15-8 0-14 6-15 13 3.2-.6 5.2.2 7 2"></path>
+                <path d="M7 17c1.8-4.6 5.6-8 11-9.6"></path>
+              </svg>
+            </span>
+            <span class="choice-text">
+              <span class="choice-title">Naturlig lyd</span>
+              <span class="choice-meta">Jeg har gjort Lydglimt<br>med lydene rundt meg</span>
+            </span>
+            <span class="choice-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <footer class="home-footer">
+        <button class="history-link" type="button" id="open-history">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="12" cy="12" r="8.5"></circle>
+            <path d="M12 7.5V12l3 2"></path>
+          </svg>
+          Erfaringer
+        </button>
+      </footer>
+    </section>
+
+    <section id="screen-player" class="screen" aria-label="Avspiller" hidden>
+      <div class="top-bar">
+        <button class="text-btn" type="button" id="player-cancel">Avbryt</button>
+      </div>
+
+      <div class="player-body">
+        <h1 class="page-title">Lydglimt</h1>
+        <p class="player-kicker" id="player-kicker">Mikro-økt</p>
+        <p class="player-duration" id="player-duration-label">30 sek</p>
+
+        <button class="player-control" type="button" id="play-toggle" aria-label="Pause">
+          <svg class="progress-svg" viewBox="0 0 200 200" aria-hidden="true">
+            <circle class="track" cx="100" cy="100" r="88"></circle>
+            <circle class="progress" id="progress-ring" cx="100" cy="100" r="88"></circle>
+          </svg>
+          <span class="player-inner">
+            <span class="play-icon" id="play-icon" aria-hidden="true"></span>
+            <span class="time-elapsed" id="time-elapsed">0:00</span>
+            <span class="time-total" id="time-total">av 0:30</span>
+          </span>
+        </button>
+      </div>
+
+      <p class="player-instruction">Si ordet i stillhet<br>og lytt.</p>
+    </section>
+
+    <section id="screen-mark" class="screen" aria-label="Merk rommet" hidden>
+      <div class="top-bar">
+        <button class="icon-btn" type="button" id="mark-back" aria-label="Tilbake">
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg>
+        </button>
+      </div>
+
+      <div class="mark-body">
+        <header class="mark-header">
+          <h1 class="page-title">Merk rommet</h1>
+          <p class="lede">Opplevde du mer rom<br>etter denne Lydglimt-økten?</p>
+        </header>
+
+        <div class="mark-options">
+          <button class="mark-option" type="button" data-room="none">
+            <span class="room-dot none" aria-hidden="true"></span>
+            Ikke mer rom
+          </button>
+          <button class="mark-option" type="button" data-room="little">
+            <span class="room-dot little" aria-hidden="true"></span>
+            Litt mer rom
+          </button>
+          <button class="mark-option" type="button" data-room="clear">
+            <span class="room-dot clear" aria-hidden="true"></span>
+            Tydelig mer rom
+          </button>
+        </div>
+      </div>
+
+      <footer class="mark-footer">
+        <p class="footnote">Alle erfaringer er nyttige.</p>
+      </footer>
+    </section>
+
+    <section id="screen-history" class="screen" aria-label="Erfaringer" hidden>
+      <div class="top-bar">
+        <button class="icon-btn" type="button" id="history-back" aria-label="Tilbake">
+          <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg>
+        </button>
+      </div>
+
+      <header class="history-header">
+        <h1 class="page-title">Erfaringer</h1>
+        <p class="lede">Variasjon er normalt. Det er en del av prosessen.</p>
+      </header>
+
+      <div class="history-scroll">
+        <div class="week-nav">
+          <button class="icon-btn" type="button" id="week-prev" aria-label="Forrige uke">
+            <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg>
+          </button>
+          <p class="week-label" id="week-label"></p>
+          <button class="icon-btn" type="button" id="week-next" aria-label="Neste uke">
+            <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+        <div class="day-list" id="day-list"></div>
+      </div>
+
+      <footer class="history-footer">
+        <p class="footnote">Hver sirkel viser om du opplevde<br>mer rom etter en Lydglimt-øvelse.<br>Trykk på en dag for å se klokkeslett.</p>
+      </footer>
+    </section>
+  </div>
+
+  <audio id="session-audio" playsinline preload="auto"></audio>
+
+  <script>
+    /* 4. app state */
+    const USE_DEMO_DATA = true;
+
+    const MICRO_AUDIO = "lydglimt.mp3";
+    const FULL_AUDIO = "lydglimt.mp3";
+    const MICRO_SECONDS = 30;
+    const FULL_SECONDS = 300;
+    const STORAGE_KEY = "lydglimt.entries";
+    const RING_RADIUS = 88;
+    const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
+    const MONTHS = [
+      "januar", "februar", "mars", "april", "mai", "juni",
+      "juli", "august", "september", "oktober", "november", "desember"
+    ];
+    const DAY_NAMES = ["Man", "Tir", "Ons", "Tor", "Fre", "Lør", "Søn"];
+    const SESSION_LABELS = {
+      micro: "Mikro",
+      full: "Full",
+      natural: "Naturlig lyd"
+    };
+
+    const DEMO_DATA = [
+      { timestamp: "2026-09-14T08:20:00", sessionType: "micro", roomChange: "none" },
+      { timestamp: "2026-09-14T19:05:00", sessionType: "natural", roomChange: "little" },
+      { timestamp: "2026-09-15T07:40:00", sessionType: "full", roomChange: "clear" },
+      { timestamp: "2026-09-16T12:10:00", sessionType: "micro", roomChange: "little" },
+      { timestamp: "2026-09-17T21:30:00", sessionType: "natural", roomChange: "none" },
+      { timestamp: "2026-09-18T06:55:00", sessionType: "full", roomChange: "clear" },
+      { timestamp: "2026-09-18T22:15:00", sessionType: "micro", roomChange: "little" },
+      { timestamp: "2026-09-20T09:00:00", sessionType: "natural", roomChange: "clear" },
+      { timestamp: "2026-09-21T09:12:00", sessionType: "micro", roomChange: "none" },
+      { timestamp: "2026-09-21T14:40:00", sessionType: "natural", roomChange: "little" },
+      { timestamp: "2026-09-21T21:05:00", sessionType: "full", roomChange: "clear" }
+    ];
+
+    const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="6" width="3.2" height="12" rx="1"></rect><rect x="13.8" y="6" width="3.2" height="12" rx="1"></rect></svg>';
+    const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 6.8v10.4L18.2 12 9 6.8z"></path></svg>';
+
+    const state = {
+      screen: "home",
+      sessionType: null,
+      playing: false,
+      usingAudio: false,
+      elapsed: 0,
+      duration: MICRO_SECONDS,
+      timerOrigin: 0,
+      clockId: null,
+      weekStart: null,
+      expandedDay: null
+    };
+
+    const els = {
+      screens: {
+        home: document.getElementById("screen-home"),
+        player: document.getElementById("screen-player"),
+        mark: document.getElementById("screen-mark"),
+        history: document.getElementById("screen-history")
+      },
+      audio: document.getElementById("session-audio"),
+      playerKicker: document.getElementById("player-kicker"),
+      playerDuration: document.getElementById("player-duration-label"),
+      playToggle: document.getElementById("play-toggle"),
+      playIcon: document.getElementById("play-icon"),
+      timeElapsed: document.getElementById("time-elapsed"),
+      timeTotal: document.getElementById("time-total"),
+      progressRing: document.getElementById("progress-ring"),
+      weekLabel: document.getElementById("week-label"),
+      weekPrev: document.getElementById("week-prev"),
+      weekNext: document.getElementById("week-next"),
+      dayList: document.getElementById("day-list")
+    };
+
+    els.progressRing.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+    els.progressRing.style.strokeDashoffset = String(RING_CIRCUMFERENCE);
+
+    /* 5. navigation */
+    function showScreen(name) {
+      state.screen = name;
+      Object.keys(els.screens).forEach(function (key) {
+        var on = key === name;
+        els.screens[key].classList.toggle("active", on);
+        els.screens[key].hidden = !on;
+      });
+    }
+
+    function goHome() {
+      stopPlayback(true);
+      state.sessionType = null;
+      showScreen("home");
+    }
+
+    function openPlayer(sessionType) {
+      state.sessionType = sessionType;
+      els.playerKicker.textContent = sessionType === "full" ? "Full økt" : "Mikro-økt";
+      els.playerDuration.textContent = sessionType === "full" ? "5 min" : "30 sek";
+      state.duration = sessionType === "full" ? FULL_SECONDS : MICRO_SECONDS;
+      state.elapsed = 0;
+      startPlayback();
+      updatePlayerUI();
+      showScreen("player");
+    }
+
+    function openMark() {
+      stopPlayback(true);
+      showScreen("mark");
+    }
+
+    function openHistory() {
+      state.weekStart = startOfWeek(new Date());
+      state.expandedDay = null;
+      renderHistory();
+      showScreen("history");
+    }
+
+    document.querySelectorAll("[data-session]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var type = btn.getAttribute("data-session");
+        if (type === "natural") {
+          state.sessionType = "natural";
+          showScreen("mark");
+          return;
+        }
+        openPlayer(type);
+      });
+    });
+
+    document.getElementById("open-history").addEventListener("click", openHistory);
+    document.getElementById("player-cancel").addEventListener("click", goHome);
+    document.getElementById("mark-back").addEventListener("click", goHome);
+    document.getElementById("history-back").addEventListener("click", goHome);
+    document.getElementById("play-toggle").addEventListener("click", togglePlayback);
+
+    document.querySelectorAll("[data-room]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        logExperience(btn.getAttribute("data-room"));
+        goHome();
+      });
+    });
+
+    els.weekPrev.addEventListener("click", function () {
+      if (els.weekPrev.disabled) return;
+      state.weekStart = addDays(state.weekStart, -7);
+      state.expandedDay = null;
+      renderHistory();
+    });
+
+    els.weekNext.addEventListener("click", function () {
+      if (els.weekNext.disabled) return;
+      state.weekStart = addDays(state.weekStart, 7);
+      state.expandedDay = null;
+      renderHistory();
+    });
+
+    /* 6. audio/timer */
+    function sessionCap() {
+      return state.sessionType === "full" ? FULL_SECONDS : MICRO_SECONDS;
+    }
+
+    function applyAudioDuration() {
+      var audio = els.audio;
+      if (!audio.duration || !isFinite(audio.duration) || audio.duration <= 0) return;
+      state.duration = Math.min(sessionCap(), audio.duration);
+      updatePlayerUI();
+    }
+
+    function startPlayback() {
+      stopClock();
+      var file = state.sessionType === "full" ? FULL_AUDIO : MICRO_AUDIO;
+      state.duration = sessionCap();
+      state.elapsed = 0;
+      state.playing = true;
+      state.usingAudio = false;
+      state.timerOrigin = Date.now();
+
+      var audio = els.audio;
+      audio.onended = function () {
+        completePlayback();
+      };
+      audio.onerror = function () {
+        state.usingAudio = false;
+      };
+      audio.onloadedmetadata = applyAudioDuration;
+
+      audio.src = file;
+      state.usingAudio = true;
+      var playAttempt = audio.play();
+      if (playAttempt && typeof playAttempt.then === "function") {
+        playAttempt.then(function () {
+          applyAudioDuration();
+        }).catch(function () {
+          state.usingAudio = false;
+        });
+      }
+
+      startClock();
+    }
+
+    function startClock() {
+      stopClock();
+      updatePlayerUI();
+      state.clockId = setInterval(tick, 100);
+    }
+
+    function stopClock() {
+      if (state.clockId) {
+        clearInterval(state.clockId);
+        state.clockId = null;
+      }
+    }
+
+    function tick() {
+      if (state.screen !== "player") return;
+      if (!state.playing) return;
+
+      if (state.usingAudio) {
+        state.elapsed = els.audio.currentTime || 0;
+        applyAudioDuration();
+      } else {
+        state.elapsed = (Date.now() - state.timerOrigin) / 1000;
+      }
+
+      if (state.elapsed >= state.duration - 0.05) {
+        state.elapsed = state.duration;
+        updatePlayerUI();
+        completePlayback();
+        return;
+      }
+      updatePlayerUI();
+    }
+
+    function togglePlayback() {
+      if (state.screen !== "player") return;
+      if (state.playing) {
+        state.playing = false;
+        if (state.usingAudio) {
+          els.audio.pause();
+          state.elapsed = els.audio.currentTime || state.elapsed;
+        } else {
+          state.elapsed = (Date.now() - state.timerOrigin) / 1000;
+        }
+      } else {
+        state.playing = true;
+        if (state.usingAudio) {
+          els.audio.play().catch(function () {
+            state.usingAudio = false;
+            state.timerOrigin = Date.now() - state.elapsed * 1000;
+          });
+        } else {
+          state.timerOrigin = Date.now() - state.elapsed * 1000;
+        }
+      }
+      updatePlayerUI();
+    }
+
+    function completePlayback() {
+      stopPlayback(true);
+      openMark();
+    }
+
+    function stopPlayback(resetAudio) {
+      stopClock();
+      state.playing = false;
+      if (resetAudio) {
+        els.audio.onended = null;
+        els.audio.onerror = null;
+        els.audio.onloadedmetadata = null;
+        els.audio.pause();
+        els.audio.removeAttribute("src");
+        try { els.audio.load(); } catch (e) {}
+      }
+    }
+
+    function updatePlayerUI() {
+      var progress = state.duration > 0 ? Math.min(1, state.elapsed / state.duration) : 0;
+      els.progressRing.style.strokeDashoffset = String(RING_CIRCUMFERENCE * (1 - progress));
+      els.progressRing.style.opacity = progress <= 0 ? "0" : "1";
+      els.timeElapsed.textContent = formatDuration(state.elapsed);
+      els.timeTotal.textContent = "av " + formatDuration(state.duration);
+      els.playIcon.innerHTML = state.playing ? ICON_PAUSE : ICON_PLAY;
+      els.playToggle.setAttribute("aria-label", state.playing ? "Pause" : "Spill av");
+    }
+
+    function formatDuration(totalSeconds) {
+      var seconds = Math.max(0, Math.floor(totalSeconds));
+      var m = Math.floor(seconds / 60);
+      var s = seconds % 60;
+      return m + ":" + String(s).padStart(2, "0");
+    }
+
+    /* 7. logging/localStorage */
+    function readStored() {
+      try {
+        var raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return [];
+        var parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function getEntries() {
+      var stored = readStored();
+      var all = USE_DEMO_DATA ? DEMO_DATA.concat(stored) : stored.slice();
+      all.sort(function (a, b) {
+        return String(a.timestamp).localeCompare(String(b.timestamp));
+      });
+      return all;
+    }
+
+    function toLocalTimestamp(date) {
+      function pad(n) { return String(n).padStart(2, "0"); }
+      return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate()) +
+        "T" + pad(date.getHours()) + ":" + pad(date.getMinutes()) + ":" + pad(date.getSeconds());
+    }
+
+    function logExperience(roomChange) {
+      var entry = {
+        timestamp: toLocalTimestamp(new Date()),
+        sessionType: state.sessionType || "micro",
+        roomChange: roomChange
+      };
+      var stored = readStored();
+      stored.push(entry);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    }
+
+    /* 8. history/week calculations */
+    function startOfWeek(date) {
+      var d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      var offset = (d.getDay() + 6) % 7;
+      d.setDate(d.getDate() - offset);
+      return d;
+    }
+
+    function addDays(date, n) {
+      return new Date(date.getFullYear(), date.getMonth(), date.getDate() + n);
+    }
+
+    function dateKey(date) {
+      function pad(n) { return String(n).padStart(2, "0"); }
+      return date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+    }
+
+    function parseTimestamp(ts) {
+      var parts = String(ts).split("T");
+      var d = parts[0].split("-").map(Number);
+      var t = (parts[1] || "00:00:00").split(":").map(Number);
+      return new Date(d[0], d[1] - 1, d[2], t[0] || 0, t[1] || 0, t[2] || 0);
+    }
+
+    function formatWeekRange(monday) {
+      var sunday = addDays(monday, 6);
+      var d1 = monday.getDate();
+      var d2 = sunday.getDate();
+      var m1 = MONTHS[monday.getMonth()];
+      var m2 = MONTHS[sunday.getMonth()];
+      var y1 = monday.getFullYear();
+      var y2 = sunday.getFullYear();
+      if (y1 === y2 && m1 === m2) return d1 + ".–" + d2 + ". " + m1 + " " + y1;
+      if (y1 === y2) return d1 + ". " + m1 + "–" + d2 + ". " + m2 + " " + y1;
+      return d1 + ". " + m1 + " " + y1 + "–" + d2 + ". " + m2 + " " + y2;
+    }
+
+    function formatClock(date) {
+      function pad(n) { return String(n).padStart(2, "0"); }
+      return pad(date.getHours()) + ":" + pad(date.getMinutes());
+    }
+
+    function hasEarlierData(monday) {
+      return getEntries().some(function (entry) {
+        return parseTimestamp(entry.timestamp) < monday;
+      });
+    }
+
+    function hasLaterData(monday) {
+      var next = addDays(monday, 7);
+      return getEntries().some(function (entry) {
+        return parseTimestamp(entry.timestamp) >= next;
+      });
+    }
+
+    function roomCircle(kind) {
+      var cls = kind === "little" ? "little" : kind === "clear" ? "clear" : "none";
+      return '<span class="room-dot ' + cls + '" aria-hidden="true"></span>';
+    }
+
+    /* 9. rendering */
+    function renderHistory() {
+      if (!state.weekStart) state.weekStart = startOfWeek(new Date());
+      var monday = state.weekStart;
+      els.weekLabel.textContent = formatWeekRange(monday);
+      els.weekPrev.disabled = !hasEarlierData(monday);
+      els.weekNext.disabled = !hasLaterData(monday);
+
+      var entries = getEntries();
+      var html = "";
+      var i;
+      for (i = 0; i < 7; i++) {
+        var day = addDays(monday, i);
+        var key = dateKey(day);
+        var dayEntries = entries.filter(function (entry) {
+          return dateKey(parseTimestamp(entry.timestamp)) === key;
+        });
+        var dots = dayEntries.map(function (entry) {
+          return roomCircle(entry.roomChange);
+        }).join("");
+        var open = state.expandedDay === key && dayEntries.length > 0;
+        var details = dayEntries.map(function (entry) {
+          var when = parseTimestamp(entry.timestamp);
+          var kind = SESSION_LABELS[entry.sessionType] || "";
+          return '<div class="day-entry"><time>' + formatClock(when) + '</time><span class="session-kind">' + kind + "</span></div>";
+        }).join("");
+
+        html += '<button class="day-row" type="button" data-day="' + key + '"' +
+          (dayEntries.length ? ' aria-expanded="' + (open ? "true" : "false") + '"' : "") + ">" +
+          '<span class="day-name">' + DAY_NAMES[i] + " " + day.getDate() + "</span>" +
+          '<span class="day-dots">' + dots + "</span></button>" +
+          '<div class="day-details' + (open ? " open" : "") + '">' + details + "</div>";
+      }
+      els.dayList.innerHTML = html;
+
+      els.dayList.querySelectorAll(".day-row").forEach(function (row) {
+        row.addEventListener("click", function () {
+          var key = row.getAttribute("data-day");
+          var hasDots = row.querySelector(".day-dots").children.length > 0;
+          if (!hasDots) return;
+          state.expandedDay = state.expandedDay === key ? null : key;
+          renderHistory();
+        });
+      });
+    }
+
+    updatePlayerUI();
+
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("./sw.js");
+      });
+    }
+  </script>
+</body>
+</html>
