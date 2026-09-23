@@ -1,4 +1,4 @@
-const CACHE_NAME = "lydglimt-v8";
+const CACHE_NAME = "lydglimt-v10";
 
 const CORE_ASSETS = [
   "./index.html",

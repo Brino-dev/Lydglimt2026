@@ -461,10 +461,27 @@
       font-variant-numeric: tabular-nums;
     }
 
+    .player-end {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+      padding: 4px 16px 0;
+      min-height: var(--tap);
+      color: var(--text-faint);
+      font-size: 0.88rem;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      flex-shrink: 0;
+    }
+
+    .player-end:active {
+      opacity: 0.7;
+    }
+
     .player-instruction {
       margin: 0 auto;
-      margin-top: auto;
-      padding: 28px 8px 0;
+      padding: 12px 8px 0;
       max-width: 18.5rem;
       color: var(--text-secondary);
       font-size: 0.92rem;
@@ -751,7 +768,7 @@
 
     <section id="screen-player" class="screen" aria-label="Avspiller" hidden>
       <div class="top-bar">
-        <button class="text-btn" type="button" id="player-cancel">Avbryt</button>
+        <button class="text-btn" type="button" id="player-cancel">Tilbake</button>
       </div>
 
       <div class="player-body">
@@ -771,10 +788,11 @@
         </button>
       </div>
 
+      <button class="player-end" type="button" id="player-end">Avslutt økten</button>
       <p class="player-instruction">Velg et lydnivå som gir plass<br>til både ord og lyd.</p>
     </section>
 
-    <section id="screen-mark" class="screen" aria-label="Merk rommet" hidden>
+    <section id="screen-mark" class="screen" aria-label="Merk rommet." hidden>
       <div class="top-bar">
         <button class="icon-btn" type="button" id="mark-back" aria-label="Tilbake">
           <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"></path></svg>
@@ -783,7 +801,7 @@
 
       <div class="mark-body">
         <header class="mark-header">
-          <h1 class="page-title">Merk rommet</h1>
+          <h1 class="page-title">Merk rommet.</h1>
           <p class="lede">Opplevde du mer rom<br>etter denne Lydglimt-økten?</p>
         </header>
 
@@ -956,6 +974,7 @@
     document.getElementById("mark-back").addEventListener("click", goHome);
     document.getElementById("history-back").addEventListener("click", goHome);
     document.getElementById("play-toggle").addEventListener("click", togglePlayback);
+    document.getElementById("player-end").addEventListener("click", endSessionEarly);
 
     document.querySelectorAll("[data-room]").forEach(function (btn) {
       btn.addEventListener("click", function () {
@@ -1079,7 +1098,13 @@
       updatePlayerUI();
     }
 
+    function endSessionEarly() {
+      if (state.screen !== "player") return;
+      completePlayback();
+    }
+
     function completePlayback() {
+      if (state.screen !== "player") return;
       stopPlayback(true);
       openMark();
     }
