@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#07090e">
+  <meta name="theme-color" content="#151A1D">
   <meta name="color-scheme" content="dark">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,12 +14,13 @@
   <style>
     /* 1. CSS variables */
     :root {
-      --bg: #07090e;
-      --surface: rgba(255, 255, 255, 0.045);
-      --surface-natural: rgba(109, 138, 130, 0.10);
+      --bg: #151A1D;
+      --surface: #303D47;
+      --surface-natural: #34423F;
       --text: #dce3ea;
       --text-muted: #8b95a1;
       --text-faint: #6a737d;
+      --text-secondary: #B4C0C9;
       --accent: #8b9aab;
       --accent-fill: #9aabc0;
       --accent-line: rgba(139, 154, 171, 0.18);
@@ -94,8 +95,17 @@
       flex-direction: column;
       position: absolute;
       inset: 0;
-      padding: calc(10px + env(safe-area-inset-top)) var(--pad) calc(20px + env(safe-area-inset-bottom));
+      padding: calc(10px + env(safe-area-inset-top, 0px)) var(--pad) calc(20px + env(safe-area-inset-bottom, 0px));
       overflow: hidden;
+    }
+
+    #screen-player {
+      padding-bottom: max(64px, calc(24px + env(safe-area-inset-bottom, 0px)));
+    }
+
+    #screen-home,
+    #screen-mark {
+      padding-bottom: max(56px, calc(24px + env(safe-area-inset-bottom, 0px)));
     }
 
     .screen.active {
@@ -193,17 +203,22 @@
 
     /* Home */
     .home-header {
-      padding-top: 7vh;
-      padding-bottom: 4vh;
-      flex-shrink: 0;
+      flex: 0.5 1 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
+      padding-top: clamp(8px, 1.25vh, 10px);
+      padding-bottom: 0;
     }
 
     .home-main {
-      flex: 1;
+      flex: 0 0 auto;
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       min-height: 0;
+      padding-top: clamp(48px, 8vh, 72px);
     }
 
     .choice-stack {
@@ -236,8 +251,8 @@
     }
 
     .choice-icon {
-      width: 28px;
-      height: 28px;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -250,7 +265,16 @@
       color: var(--natural);
     }
 
-    .choice-icon svg,
+    .choice-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.9;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
     .choice-chevron svg {
       width: 22px;
       height: 22px;
@@ -277,13 +301,13 @@
 
     .choice-meta {
       font-size: 0.88rem;
-      color: var(--text-muted);
+      color: var(--text-secondary);
       font-weight: 400;
       line-height: 1.35;
     }
 
     .choice-natural .choice-meta {
-      color: var(--natural-text);
+      color: var(--text-secondary);
     }
 
     .choice-chevron {
@@ -312,9 +336,11 @@
     }
 
     .home-footer {
-      flex-shrink: 0;
+      flex: 1 1 0;
+      min-height: 0;
       display: flex;
       justify-content: center;
+      align-items: flex-end;
       padding-top: 20px;
     }
 
@@ -362,12 +388,6 @@
       color: var(--text-muted);
       font-size: 1rem;
       font-weight: 400;
-    }
-
-    .player-duration {
-      margin: 2px 0 0;
-      color: var(--text-faint);
-      font-size: 0.9rem;
     }
 
     .player-control {
@@ -442,21 +462,26 @@
     }
 
     .player-instruction {
+      margin: 0 auto;
       margin-top: auto;
-      color: var(--text-muted);
-      font-size: 0.95rem;
+      padding: 28px 8px 0;
+      max-width: 18.5rem;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
       text-align: center;
       line-height: 1.45;
+      flex-shrink: 0;
     }
 
     /* Mark room */
     .mark-header {
-      padding-top: 8px;
+      flex: 0 0 auto;
+      padding-top: 0;
     }
 
     .mark-header .page-title {
       text-align: center;
-      margin-top: 8px;
+      margin-top: 0;
     }
 
     .mark-header,
@@ -472,11 +497,24 @@
       min-height: 0;
     }
 
+    .mark-body::before {
+      content: "";
+      flex: 0.6 1 0;
+      min-height: 0;
+    }
+
+    .mark-body::after {
+      content: "";
+      flex: 1.15 1 0;
+      min-height: 0;
+    }
+
     .mark-options {
+      flex: 0 0 auto;
       display: flex;
       width: 100%;
       gap: 6px;
-      margin-top: 40px;
+      margin-top: clamp(52px, 8vh, 80px);
     }
 
     .mark-option {
@@ -504,7 +542,8 @@
     }
 
     .mark-footer {
-      margin-top: auto;
+      flex-shrink: 0;
+      margin-top: 0;
       padding-top: 24px;
     }
 
@@ -644,9 +683,9 @@
           <button class="choice" type="button" data-session="micro">
             <span class="choice-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
-                <path d="M4 13v-1a8 8 0 0 1 16 0v1"></path>
-                <rect x="2.5" y="12.5" width="4.5" height="7.5" rx="2"></rect>
-                <rect x="17" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+                <path d="M4 12.75v-1.25a8 8 0 0 1 16 0v1.25"></path>
+                <rect x="2" y="11.5" width="5.2" height="8.8" rx="2.4" fill="currentColor"></rect>
+                <rect x="16.8" y="11.5" width="5.2" height="8.8" rx="2.4" fill="currentColor"></rect>
               </svg>
             </span>
             <span class="choice-text">
@@ -661,9 +700,9 @@
           <button class="choice" type="button" data-session="full">
             <span class="choice-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
-                <path d="M4 13v-1a8 8 0 0 1 16 0v1"></path>
-                <rect x="2.5" y="12.5" width="4.5" height="7.5" rx="2"></rect>
-                <rect x="17" y="12.5" width="4.5" height="7.5" rx="2"></rect>
+                <path d="M4 12.75v-1.25a8 8 0 0 1 16 0v1.25"></path>
+                <rect x="2" y="11.5" width="5.2" height="8.8" rx="2.4" fill="currentColor"></rect>
+                <rect x="16.8" y="11.5" width="5.2" height="8.8" rx="2.4" fill="currentColor"></rect>
               </svg>
             </span>
             <span class="choice-text">
@@ -684,8 +723,8 @@
           <button class="choice choice-natural" type="button" data-session="natural">
             <span class="choice-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24">
-                <path d="M6 19c7-1.2 13-7.2 13-15-8 0-14 6-15 13 3.2-.6 5.2.2 7 2"></path>
-                <path d="M7 17c1.8-4.6 5.6-8 11-9.6"></path>
+                <path d="M5 20c8-1.4 14.5-8 14.5-16.5C11 3.5 4 10 3.5 18.5 7 18 9.2 18.8 11.2 21"></path>
+                <path d="M6.2 16.8C8.4 11.8 12.6 8.2 18.4 6.4"></path>
               </svg>
             </span>
             <span class="choice-text">
@@ -716,9 +755,8 @@
       </div>
 
       <div class="player-body">
-        <h1 class="page-title">Lydglimt</h1>
+        <h1 class="page-title">Si ordet.<br>Hør lyden.</h1>
         <p class="player-kicker" id="player-kicker">Mikro-økt</p>
-        <p class="player-duration" id="player-duration-label">30 sek</p>
 
         <button class="player-control" type="button" id="play-toggle" aria-label="Pause">
           <svg class="progress-svg" viewBox="0 0 200 200" aria-hidden="true">
@@ -733,7 +771,7 @@
         </button>
       </div>
 
-      <p class="player-instruction">Si ordet i stillhet<br>og lytt.</p>
+      <p class="player-instruction">Velg et lydnivå som gir plass<br>til både ord og lyd.</p>
     </section>
 
     <section id="screen-mark" class="screen" aria-label="Merk rommet" hidden>
@@ -849,7 +887,6 @@
       },
       audio: document.getElementById("session-audio"),
       playerKicker: document.getElementById("player-kicker"),
-      playerDuration: document.getElementById("player-duration-label"),
       playToggle: document.getElementById("play-toggle"),
       playIcon: document.getElementById("play-icon"),
       timeElapsed: document.getElementById("time-elapsed"),
@@ -883,7 +920,6 @@
     function openPlayer(sessionType) {
       state.sessionType = sessionType;
       els.playerKicker.textContent = sessionType === "full" ? "Full økt" : "Mikro-økt";
-      els.playerDuration.textContent = sessionType === "full" ? "5 min" : "30 sek";
       state.duration = sessionType === "full" ? FULL_SECONDS : MICRO_SECONDS;
       state.elapsed = 0;
       startPlayback();
