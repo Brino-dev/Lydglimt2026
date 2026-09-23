@@ -805,10 +805,8 @@
 
   <script>
     /* 4. app state */
-    const USE_DEMO_DATA = true;
-
-    const MICRO_AUDIO = "lydglimt.mp3";
-    const FULL_AUDIO = "lydglimt.mp3";
+    const MICRO_AUDIO = "lydglimt-mikro-fade03.mp3";
+    const FULL_AUDIO = "lydglimt-full-fade03.mp3";
     const MICRO_SECONDS = 30;
     const FULL_SECONDS = 300;
     const STORAGE_KEY = "lydglimt.entries";
@@ -825,20 +823,6 @@
       full: "Full",
       natural: "Naturlig lyd"
     };
-
-    const DEMO_DATA = [
-      { timestamp: "2026-09-14T08:20:00", sessionType: "micro", roomChange: "none" },
-      { timestamp: "2026-09-14T19:05:00", sessionType: "natural", roomChange: "little" },
-      { timestamp: "2026-09-15T07:40:00", sessionType: "full", roomChange: "clear" },
-      { timestamp: "2026-09-16T12:10:00", sessionType: "micro", roomChange: "little" },
-      { timestamp: "2026-09-17T21:30:00", sessionType: "natural", roomChange: "none" },
-      { timestamp: "2026-09-18T06:55:00", sessionType: "full", roomChange: "clear" },
-      { timestamp: "2026-09-18T22:15:00", sessionType: "micro", roomChange: "little" },
-      { timestamp: "2026-09-20T09:00:00", sessionType: "natural", roomChange: "clear" },
-      { timestamp: "2026-09-21T09:12:00", sessionType: "micro", roomChange: "none" },
-      { timestamp: "2026-09-21T14:40:00", sessionType: "natural", roomChange: "little" },
-      { timestamp: "2026-09-21T21:05:00", sessionType: "full", roomChange: "clear" }
-    ];
 
     const ICON_PAUSE = '<svg viewBox="0 0 24 24" fill="currentColor"><rect x="7" y="6" width="3.2" height="12" rx="1"></rect><rect x="13.8" y="6" width="3.2" height="12" rx="1"></rect></svg>';
     const ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 6.8v10.4L18.2 12 9 6.8z"></path></svg>';
@@ -1107,12 +1091,11 @@
     }
 
     function getEntries() {
-      var stored = readStored();
-      var all = USE_DEMO_DATA ? DEMO_DATA.concat(stored) : stored.slice();
-      all.sort(function (a, b) {
+      var stored = readStored().slice();
+      stored.sort(function (a, b) {
         return String(a.timestamp).localeCompare(String(b.timestamp));
       });
-      return all;
+      return stored;
     }
 
     function toLocalTimestamp(date) {

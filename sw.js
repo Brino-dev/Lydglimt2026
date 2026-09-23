@@ -1,9 +1,10 @@
-const CACHE_NAME = "lydglimt-v2";
+const CACHE_NAME = "lydglimt-v4";
 
 const CORE_ASSETS = [
   "./index.html",
   "./manifest.webmanifest",
-  "./lydglimt.mp3",
+  "./lydglimt-mikro-fade03.mp3",
+  "./lydglimt-full-fade03.mp3",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
   "./icons/apple-touch-icon.png"
@@ -75,10 +76,14 @@ function cacheCopy(request, response) {
 }
 
 function respondToMedia(request) {
-  return caches.match("./lydglimt.mp3", { ignoreSearch: true }).then(function (cached) {
+  var key = "./" + new URL(request.url).pathname.split("/").pop();
+
+  return caches.match(request, { ignoreSearch: true }).then(function (cached) {
+    return cached || caches.match(key, { ignoreSearch: true });
+  }).then(function (cached) {
     if (!cached) {
       return fetch(request).then(function (response) {
-        return cacheCopy("./lydglimt.mp3", response);
+        return cacheCopy(key, response);
       });
     }
     if (!request.headers.has("range")) return cached;
